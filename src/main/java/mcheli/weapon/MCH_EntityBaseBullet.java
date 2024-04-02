@@ -832,8 +832,7 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
       }
 
       if(this.miniNukeYield >0 && this.miniNukeYield <30){
-         worldObj.spawnEntityInWorld(EntityNukeExplosionMK5.statFac(worldObj, this.nukeYield, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5));
-         EntityNukeTorex.statFac(worldObj, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5, (float) this.nukeYield);
+         ExplosionNukeSmall.explode(worldObj, posX, posY, posZ, ExplosionNukeSmall.PARAMS_HIGH);
 
       }
 
