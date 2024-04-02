@@ -57,7 +57,6 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
    public int explosionPower;
    public int explosionPowerInWater;
    public int nukeYield;
-   public int miniNukeYield;
    public int chemYield = 0;
    private int power;
    public double acceleration;
@@ -825,13 +824,13 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
          result = MCH_Explosion.newExplosionInWater(super.worldObj, this, this.shootingEntity, x, y, z, exp, expBlock, this.isBomblet == 1?super.rand.nextInt(3) == 0:true, true, this.getInfo().flaming, true, 0, this.getInfo() != null?this.getInfo().damageFactor:null);
       }
 
-      if(this.nukeYield >0){
+      if(this.nukeYield >0 && this.nukeYield >30){
          worldObj.spawnEntityInWorld(EntityNukeExplosionMK5.statFac(worldObj, this.nukeYield, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5));
          EntityNukeTorex.statFac(worldObj, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5, (float) this.nukeYield);
 
       }
 
-      if(this.miniNukeYield >0 && this.miniNukeYield <30){
+      if(this.nukeYield >0 && this.nukeYield <30){
          ExplosionNukeSmall.explode(worldObj, posX, posY, posZ, ExplosionNukeSmall.PARAMS_HIGH);
 
       }
