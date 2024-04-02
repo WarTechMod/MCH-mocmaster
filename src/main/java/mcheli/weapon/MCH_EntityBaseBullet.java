@@ -57,6 +57,7 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
    public int explosionPower;
    public int explosionPowerInWater;
    public int nukeYield;
+   public int miniNukeYield;
    public int chemYield = 0;
    private int power;
    public double acceleration;
@@ -825,6 +826,12 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
       }
 
       if(this.nukeYield >0){
+         worldObj.spawnEntityInWorld(EntityNukeExplosionMK5.statFac(worldObj, this.nukeYield, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5));
+         EntityNukeTorex.statFac(worldObj, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5, (float) this.nukeYield);
+
+      }
+
+      if(this.miniNukeYield >0 && this.miniNukeYield <30){
          worldObj.spawnEntityInWorld(EntityNukeExplosionMK5.statFac(worldObj, this.nukeYield, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5));
          EntityNukeTorex.statFac(worldObj, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5, (float) this.nukeYield);
 
