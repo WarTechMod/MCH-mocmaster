@@ -5,6 +5,7 @@ import com.hbm.entity.effect.EntityNukeCloudSmall;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.explosion.ExplosionChaos;
+import com.hbm.explosion.ExplosionNukeSmall;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import java.util.Iterator;
