@@ -1,17 +1,24 @@
 package mcheli.weapon;
 
+import com.hbm.main.MainRegistry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import mcheli.aircraft.MCH_EntityAircraft;
 import mcheli.weapon.MCH_BulletModel;
 import mcheli.weapon.MCH_DefaultBulletModels;
 import mcheli.weapon.MCH_EntityBaseBullet;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MCH_EntityTvMissile extends MCH_EntityBaseBullet {
 
    public boolean isSpawnParticle = true;
-
 
    public MCH_EntityTvMissile(World par1World) {
       super(par1World);
@@ -41,8 +48,8 @@ public class MCH_EntityTvMissile extends MCH_EntityBaseBullet {
       } else if(!super.worldObj.isRemote) {
          this.setDead();
       }
-
    }
+
 
    public void onUpdateMotion() {
       Entity e = super.shootingEntity;
@@ -64,4 +71,5 @@ public class MCH_EntityTvMissile extends MCH_EntityBaseBullet {
    public MCH_BulletModel getDefaultBulletModel() {
       return MCH_DefaultBulletModels.ATMissile;
    }
+
 }

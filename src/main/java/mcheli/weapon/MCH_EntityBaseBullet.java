@@ -1,20 +1,24 @@
 package mcheli.weapon;
 
-import com.hbm.config.BombConfig;
-import com.hbm.entity.effect.EntityNukeCloudSmall;
+
+import com.hbm.blocks.ModBlocks;
+import com.hbm.entity.effect.EntityMist;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.explosion.ExplosionChaos;
+import com.hbm.explosion.ExplosionLarge;
 import com.hbm.explosion.ExplosionNukeSmall;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.*;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.packet.AuxParticlePacketNT;
+import com.hbm.packet.PacketDispatcher;
+import com.hbm.potion.HbmPotion;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import java.util.Iterator;
-import java.util.List;
-import mcheli.MCH_Achievement;
-import mcheli.MCH_Config;
-import mcheli.MCH_Explosion;
-import mcheli.MCH_Lib;
-import mcheli.MCH_MOD;
+import mcheli.*;
 import mcheli.aircraft.MCH_EntityAircraft;
 import mcheli.aircraft.MCH_EntityHitBox;
 import mcheli.aircraft.MCH_EntitySeat;
@@ -22,27 +26,22 @@ import mcheli.aircraft.MCH_PacketNotifyHitBullet;
 import mcheli.chain.MCH_EntityChain;
 import mcheli.particles.MCH_ParticleParam;
 import mcheli.particles.MCH_ParticlesUtil;
-import mcheli.weapon.MCH_BulletModel;
-import mcheli.weapon.MCH_EntityBullet;
-import mcheli.weapon.MCH_EntityRocket;
-import mcheli.weapon.MCH_WeaponBase;
-import mcheli.weapon.MCH_WeaponInfo;
-import mcheli.weapon.MCH_WeaponInfoManager;
 import mcheli.wrapper.W_Entity;
 import mcheli.wrapper.W_EntityPlayer;
 import mcheli.wrapper.W_MovingObjectPosition;
 import mcheli.wrapper.W_WorldFunc;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
+
+import java.util.Iterator;
+import java.util.List;
 
 public abstract class MCH_EntityBaseBullet extends W_Entity {
 
@@ -58,7 +57,9 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
    public int explosionPower;
    public int explosionPowerInWater;
    public int nukeYield;
-   public int chemYield = 0;
+   public int chlorineYield;
+   public int wpYield;
+   public int uranYield;
    private int power;
    public double acceleration;
    public double accelerationFactor;
@@ -303,7 +304,9 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
       this.explosionPower = w.explosionPower;
       this.explosionPowerInWater = w.explosionPowerInWater;
       this.nukeYield = w.nukeYield;
-      this.chemYield = w.chemYield;
+      this.chlorineYield = w.chlorineYield;
+      this.wpYield = w.wpYield;
+      this.uranYield = w.uranYield;
       this.setPower(w.power);
       this.piercing = w.piercing;
       this.shootingAircraft = entity;
@@ -314,7 +317,9 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
       this.explosionPower = b.explosionPower;
       this.explosionPowerInWater = b.explosionPowerInWater;
       this.nukeYield = b.nukeYield;
-      this.chemYield = b.chemYield;
+      this.chlorineYield = b.chlorineYield;
+      this.wpYield = b.wpYield;
+      this.uranYield = b.uranYield;
       this.setPower(b.getPower());
       this.piercing = b.piercing;
       this.shootingAircraft = entity;
@@ -816,6 +821,31 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
       }
 
    }
+   private void killAndClear() {
+      this.setDead();
+   }
+   public void ExplosionImproved(World worldObj, double posX, double posY, double posZ, float size, float rangeMod, boolean breaksBlocks, Block slag, int slagMeta) {
+      worldObj.playSoundEffect(posX, posY, posZ, "wartecmod:entity.bombDet3", 50.0F, 0.9F + worldObj.rand.nextFloat() * 0.2F);
+      Vec3 vec = Vec3.createVectorHelper(posX, posY, posZ).normalize();
+      ExplosionVNT xnt = new ExplosionVNT(worldObj, posX, posY, posZ, size);
+      if(breaksBlocks) {
+         xnt.setBlockAllocator(new BlockAllocatorStandard(48));
+         xnt.setBlockProcessor(new BlockProcessorStandard().setNoDrop().withBlockEffect(new BlockMutatorDebris(slag, slagMeta)));
+      }
+      xnt.setEntityProcessor(new EntityProcessorCross(7.5).withRangeMod(rangeMod));
+      xnt.setPlayerProcessor(new PlayerProcessorStandard());
+      xnt.setSFX(new ExplosionEffectStandard());
+      xnt.explode();
+      killAndClear();
+   }
+
+   public static void McheliMush(World world, double x, double y, double z, float size) {
+      NBTTagCompound data = new NBTTagCompound();
+      data.setString("type", "rbmkmush");
+      data.setFloat("scale", size);
+      PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.dimensionId, x, y, z, 250));
+   }
+
 
    public void newExplosion(double x, double y, double z, float exp, float expBlock, boolean inWater) {
       MCH_Explosion.ExplosionResult result;
@@ -825,19 +855,90 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
          result = MCH_Explosion.newExplosionInWater(super.worldObj, this, this.shootingEntity, x, y, z, exp, expBlock, this.isBomblet == 1?super.rand.nextInt(3) == 0:true, true, this.getInfo().flaming, true, 0, this.getInfo() != null?this.getInfo().damageFactor:null);
       }
 
-      if(this.nukeYield >0 && this.nukeYield >25){
-         worldObj.spawnEntityInWorld(EntityNukeExplosionMK5.statFac(worldObj, this.nukeYield, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5));
-         EntityNukeTorex.statFac(worldObj, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5, (float) this.nukeYield);
-
+      if(this.nukeYield >0 && this.nukeYield <= 25) {
+         ExplosionNukeSmall.explode(worldObj, posX, posY, posZ, ExplosionNukeSmall.PARAMS_MEDIUM );
+      }
+      if(this.nukeYield >25 && this.nukeYield > 0){
+            worldObj.spawnEntityInWorld(EntityNukeExplosionMK5.statFac(worldObj, this.nukeYield, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5));
+            EntityNukeTorex.statFac(worldObj, this.posX + 0.5, this.posY + 0.5, this.posZ + 0.5, (float) this.nukeYield);
       }
 
-      if(this.nukeYield >0 && this.nukeYield <25){
-         ExplosionNukeSmall.explode(worldObj, posX, posY, posZ, ExplosionNukeSmall.PARAMS_HIGH);
-
+      if(this.uranYield >0) {
+         if (this.uranYield > 10) {
+            this.uranYield = 10;
+         }
+         result = MCH_Explosion.newExplosion(super.worldObj, this, this.shootingEntity, x, y, z, this.uranYield, expBlock, this.isBomblet == 1 ? super.rand.nextInt(3) == 0 : true, true, this.getInfo().flaming, true, 0, this.getInfo() != null ? this.getInfo().damageFactor : null);
+         PollutionHandler.incrementPollution(super.worldObj, (int) posX, (int) posY, (int) posZ, PollutionHandler.PollutionType.HEAVYMETAL, 5.0F);
       }
 
-      if(this.chemYield > 0 ){
-         ExplosionChaos.spawnChlorine(worldObj, posX, posY+0.5, posZ, this.chemYield, 1.25, 0);
+
+         if(this.wpYield >0){
+         if(this.wpYield >30){
+            this.wpYield = 30;
+         }
+         ExplosionImproved(worldObj, posX, posY, posZ , this.wpYield, 1.0F, false, ModBlocks.block_slag, 1);
+         ExplosionLarge.spawnShrapnels(worldObj, posX, posY, posZ, 30);
+         ExplosionChaos.burn(worldObj, (int) posX, (int) posY, (int) posZ, 20);
+         int radius = this.wpYield;
+         List<Entity> hit = worldObj.getEntitiesWithinAABBExcludingEntity(
+                 null,
+                 AxisAlignedBB.getBoundingBox(
+                         posX - radius,
+                         posY - radius,
+                         posZ - radius,
+                         posX + radius,
+                         posY + radius,
+                         posZ + radius
+                 )
+         );
+         for(Entity e : hit) {
+            e.setFire(5);
+            if(e instanceof EntityLivingBase) {
+               PotionEffect eff = new PotionEffect(
+                       HbmPotion.phosphorus.id,
+                       30 * 20,
+                       0,
+                       true
+               );
+               eff.getCurativeItems().clear();
+               ((EntityLivingBase)e).addPotionEffect(eff);
+            }
+         }
+         for(int i = 0; i < 10; i++) {
+            NBTTagCompound haze = new NBTTagCompound();
+            haze.setString("type", "haze");
+            PacketDispatcher.wrapper.sendToAllAround(
+                    new AuxParticlePacketNT(
+                            haze,
+                            posX + worldObj.rand.nextGaussian() * 15,
+                            posY,
+                            posZ + worldObj.rand.nextGaussian() * 15
+                    ),
+                    new NetworkRegistry.TargetPoint(
+                            worldObj.provider.dimensionId,
+                            posX,
+                            posY,
+                            posZ,
+                            150
+                    )
+            );
+         }
+         McheliMush(worldObj, posX, posY, posZ, 15.0F);
+      }
+
+      if(this.chlorineYield > 0) {
+         if(this.chlorineYield >30) {
+            this.chlorineYield = 30;
+         }
+         if (!worldObj.isRemote) {
+            EntityMist mist = new EntityMist(worldObj);
+            mist.setType(Fluids.CHLORINE);
+            mist.setPosition(posX, posY, posZ);
+            mist.setArea(this.chlorineYield, this.chlorineYield);
+            mist.setDuration(160);
+            worldObj.spawnEntityInWorld(mist);
+         }
+         PollutionHandler.incrementPollution(worldObj, (int) posX, (int) posY, (int) posZ, PollutionHandler.PollutionType.HEAVYMETAL, 10F);
       }
 
       if(result != null && result.hitEntity) {

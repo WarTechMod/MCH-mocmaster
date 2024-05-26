@@ -27,7 +27,7 @@ public abstract class MCH_WeaponBase {
    public final float fixRotationPitch;
    public final String name;
    public final MCH_WeaponInfo weaponInfo;
-   public int chemYield;
+   public int chlorineYield;
    public String displayName;
    public int power;
    public float acceleration;
@@ -45,7 +45,9 @@ public abstract class MCH_WeaponBase {
    public int tick;
    public int optionParameter1;
    public int optionParameter2;
-   private int currentMode;
+   public int wpYield;
+    public int uranYield;
+    private int currentMode;
    public boolean canPlaySound;
 
 
@@ -62,7 +64,9 @@ public abstract class MCH_WeaponBase {
       this.explosionPower = 0;
       this.explosionPowerInWater = 0;
       this.nukeYield = wi.nukeYield;
-      this.chemYield = wi.chemYield;
+      this.chlorineYield = wi.chlorineYield;
+      this.wpYield = wi.wpYield;
+      this.uranYield = wi.uranYield;
       this.interval = 1;
       this.numMode = 0;
       this.lockTime = 0;

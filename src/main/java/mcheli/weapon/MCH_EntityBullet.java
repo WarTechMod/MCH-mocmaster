@@ -1,6 +1,11 @@
 package mcheli.weapon;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.hbm.main.MainRegistry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import mcheli.MCH_Config;
 import mcheli.MCH_Lib;
 import mcheli.MCH_MOD;
@@ -15,9 +20,14 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager;
 
 public class MCH_EntityBullet extends MCH_EntityBaseBullet {
+
+   private ForgeChunkManager.Ticket loaderTicket;
+
 
    public MCH_EntityBullet(World par1World) {
       super(par1World);
@@ -25,6 +35,12 @@ public class MCH_EntityBullet extends MCH_EntityBaseBullet {
 
    public MCH_EntityBullet(World par1World, double pX, double pY, double pZ, double targetX, double targetY, double targetZ, float yaw, float pitch, double acceleration) {
       super(par1World, pX, pY, pZ, targetX, targetY, targetZ, yaw, pitch, acceleration);
+   }
+
+   @Override
+   protected void entityInit() {
+      super.entityInit();
+      this.init(ForgeChunkManager.requestTicket(MainRegistry.instance, worldObj, ForgeChunkManager.Type.ENTITY));
    }
 
    public void onUpdate() {
@@ -49,8 +65,17 @@ public class MCH_EntityBullet extends MCH_EntityBaseBullet {
                }
             }
          }
+         loadNeighboringChunks((int) Math.floor(posX / 16), (int) Math.floor(posZ / 16));
       }
+      if(this.ticksExisted>300){
+         this.setDead();
+      }
+   }
 
+   @Override
+   @SideOnly(Side.CLIENT)
+   public boolean isInRangeToRenderDist(double distance) {
+      return true;
    }
 
    protected void onUpdateCollided() {
@@ -129,5 +154,47 @@ public class MCH_EntityBullet extends MCH_EntityBaseBullet {
 
    public MCH_BulletModel getDefaultBulletModel() {
       return MCH_DefaultBulletModels.Bullet;
+   }
+
+   public void init(ForgeChunkManager.Ticket ticket) {
+      if(!worldObj.isRemote) {
+
+         if(ticket != null) {
+
+            if(loaderTicket == null) {
+
+               loaderTicket = ticket;
+               loaderTicket.bindEntity(this);
+               loaderTicket.getModData();
+            }
+
+            ForgeChunkManager.forceChunk(loaderTicket, new ChunkCoordIntPair(chunkCoordX, chunkCoordZ));
+         }
+      }
+   }
+
+   List<ChunkCoordIntPair> loadedChunks = new ArrayList<ChunkCoordIntPair>();
+
+   public void loadNeighboringChunks(int newChunkX, int newChunkZ) {
+      if(!worldObj.isRemote && loaderTicket != null) {
+
+         clearChunkLoader();
+
+         loadedChunks.clear();
+         loadedChunks.add(new ChunkCoordIntPair(newChunkX, newChunkZ));
+         //loadedChunks.add(new ChunkCoordIntPair(newChunkX + (int) Math.floor((this.posX + this.motionX * this.motionMult()) / 16D), newChunkZ + (int) Math.floor((this.posZ + this.motionZ * this.motionMult()) / 16D)));
+
+         for(ChunkCoordIntPair chunk : loadedChunks) {
+            ForgeChunkManager.forceChunk(loaderTicket, chunk);
+         }
+      }
+   }
+
+   public void clearChunkLoader() {
+      if(!worldObj.isRemote && loaderTicket != null) {
+         for(ChunkCoordIntPair chunk : loadedChunks) {
+            ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+         }
+      }
    }
 }

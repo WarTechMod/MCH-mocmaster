@@ -22,7 +22,7 @@ public class MCH_WeaponInfo extends MCH_BaseInfo {
 
    public final String name;
    public int nukeYield;
-   public int chemYield=0;
+   public int chlorineYield;
    public String displayName;
    public String type;
    public int power;
@@ -100,9 +100,11 @@ public class MCH_WeaponInfo extends MCH_BaseInfo {
    public String group;
    public List listMuzzleFlash;
    public List listMuzzleFlashSmoke;
+   public int wpYield;
+    public int uranYield;
 
 
-   public MCH_WeaponInfo(String name) {
+    public MCH_WeaponInfo(String name) {
       this.name = name;
       this.displayName = name;
       this.type = "";
@@ -179,6 +181,9 @@ public class MCH_WeaponInfo extends MCH_BaseInfo {
       this.fixCameraPitch = false;
       this.cameraRotationSpeedPitch = 1.0F;
       this.nukeYield=0;
+      this.chlorineYield=0;
+      this.wpYield=0;
+
    }
 
    public void checkData() {
@@ -293,8 +298,12 @@ public class MCH_WeaponInfo extends MCH_BaseInfo {
             this.delay = this.toInt(data, 0, 100000);
          } else if(item.equalsIgnoreCase("nukeYield")) {
             this.nukeYield = this.toInt(data, 0, 100000);
-         } else if(item.equalsIgnoreCase("chemYield")) {
-            this.chemYield = this.toInt(data, 0, 100000);
+         } else if(item.equalsIgnoreCase("chlorineYield")) {
+            this.chlorineYield = this.toInt(data, 0, 100000);
+         } else if(item.equalsIgnoreCase("wpYield")) {
+            this.wpYield = this.toInt(data, 0, 100000);
+         } else if(item.equalsIgnoreCase("uranYield")) {
+            this.uranYield = this.toInt(data, 0, 100000);
          } else if(item.compareTo("reloadtime") == 0) {
             this.reloadTime = this.toInt(data, 3, 1000);
          } else if(item.compareTo("round") == 0) {

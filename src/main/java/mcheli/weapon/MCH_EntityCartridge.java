@@ -89,6 +89,7 @@ public class MCH_EntityCartridge extends W_Entity {
       super.motionZ *= 0.98D;
       super.motionY += (double)this.gravity;
       this.move();
+
    }
 
    public void rotation() {
