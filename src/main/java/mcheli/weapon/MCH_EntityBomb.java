@@ -61,9 +61,9 @@ public class MCH_EntityBomb extends MCH_EntityBaseBullet {
       }
       loadNeighboringChunks((int) Math.floor(posX / 16), (int) Math.floor(posZ / 16));
 
-      if(this.ticksExisted>1200){
-         this.setDead();
-      }
+      //if(this.ticksExisted>1200){
+         //this.setDead();
+      //}
 
       this.onUpdateBomblet();
    }
