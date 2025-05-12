@@ -12,7 +12,6 @@ import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.*;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.potion.HbmPotion;
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -843,7 +842,6 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
       NBTTagCompound data = new NBTTagCompound();
       data.setString("type", "rbmkmush");
       data.setFloat("scale", size);
-      PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.dimensionId, x, y, z, 250));
    }
 
 
@@ -907,21 +905,7 @@ public abstract class MCH_EntityBaseBullet extends W_Entity {
          for(int i = 0; i < 10; i++) {
             NBTTagCompound haze = new NBTTagCompound();
             haze.setString("type", "haze");
-            PacketDispatcher.wrapper.sendToAllAround(
-                    new AuxParticlePacketNT(
-                            haze,
-                            posX + worldObj.rand.nextGaussian() * 15,
-                            posY,
-                            posZ + worldObj.rand.nextGaussian() * 15
-                    ),
-                    new NetworkRegistry.TargetPoint(
-                            worldObj.provider.dimensionId,
-                            posX,
-                            posY,
-                            posZ,
-                            150
-                    )
-            );
+
          }
          McheliMush(worldObj, posX, posY, posZ, 15.0F);
       }
